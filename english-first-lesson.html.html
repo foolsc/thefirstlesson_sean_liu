@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>初一英语先导课 - 可视化课件</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c4a6e'/%3E%3Ctext x='32' y='44' font-size='32' text-anchor='middle' fill='white' font-weight='bold'%3EE%3C/text%3E%3C/svg%3E">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background: #0f172a;
+    line-height: 1.5;
+    color: #1f2937;
+    position: relative;
+  }
+  .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .slide.active {
+    display: flex;
+    opacity: 1;
+  }
+  .slide-header {
+    padding: clamp(12px, 2vh, 24px) clamp(20px, 4vw, 60px);
+    font-size: clamp(16px, 2.2vw, 28px);
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+  }
+  .slide-body {
+    flex: 1;
+    padding: clamp(16px, 3vh, 40px) clamp(20px, 5vw, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    overflow: hidden;
+  }
+  .slide-num {
+    display: inline-block;
+    background: rgba(255,255,255,0.25);
+    padding: clamp(2px, 0.5vh, 5px) clamp(8px, 1vw, 16px);
+    border-radius: 6px;
+    margin-right: clamp(8px, 1vw, 16px);
+    font-size: clamp(13px, 1.6vw, 20px);
+  }
+  h1 { font-size: clamp(28px, 4vw, 52px); font-weight: bold; margin-bottom: clamp(8px, 1.5vh, 16px); }
+  .subtitle { font-size: clamp(18px, 2.5vw, 30px); opacity: 0.9; }
+  .comparison-row {
+    display: flex;
+    gap: clamp(12px, 2vw, 32px);
+    margin-bottom: clamp(10px, 2vh, 24px);
+    flex-wrap: wrap;
+    align-items: stretch;
+    flex: 1;
+  }
+  .cn-box, .en-box {
+    flex: 1;
+    min-width: 0;
+    border-radius: clamp(10px, 1vw, 16px);
+    padding: clamp(14px, 2.5vh, 28px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .cn-box { background: #fee2e2; border: clamp(2px, 0.3vw, 4px) solid #ef4444; }
+  .en-box { background: #dcfce7; border: clamp(2px, 0.3vw, 4px) solid #22c55e; }
+  .box-label { font-size: clamp(13px, 1.5vw, 20px); font-weight: bold; margin-bottom: clamp(6px, 1vh, 12px); }
+  .cn-box .box-label { color: #991b1b; }
+  .en-box .box-label { color: #166534; }
+  .box-text { font-size: clamp(20px, 3vw, 40px); font-weight: bold; line-height: 1.4; }
+  .en-box .box-text { font-family: Consolas, 'Courier New', monospace; }
+  .arrow {
+    display: flex;
+    align-items: center;
+    font-size: clamp(28px, 3.5vw, 52px);
+    font-weight: bold;
+    color: #0c4a6e;
+  }
+  .tip-box {
+    width: 100%;
+    margin: clamp(12px, 2vh, 24px) auto 0;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .tip-inner {
+    display: inline-block;
+    border-radius: clamp(8px, 1vw, 14px);
+    padding: clamp(10px, 1.8vh, 20px) clamp(20px, 3vw, 40px);
+    font-size: clamp(15px, 1.8vw, 26px);
+    font-weight: bold;
+    color: white;
+  }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 420px)), 1fr));
+    gap: clamp(12px, 1.8vw, 28px);
+    width: 100%;
+    flex: 1;
+    align-content: center;
+  }
+  .grid-card {
+    background: white;
+    border-radius: clamp(10px, 1vw, 14px);
+    padding: clamp(14px, 2vh, 26px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border-left: clamp(3px, 0.4vw, 6px) solid #3b82f6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .grid-card .cn { font-size: clamp(14px, 1.6vw, 22px); color: #991b1b; margin-bottom: clamp(6px, 1vh, 10px); }
+  .grid-card .en { font-size: clamp(17px, 2vw, 28px); font-weight: bold; font-family: Consolas, monospace; color: #1f2937; line-height: 1.3; }
+  .pyramid-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    justify-content: space-evenly;
+  }
+  .pyramid-layer {
+    border-radius: clamp(8px, 1vw, 12px);
+    padding: clamp(12px, 2vh, 24px) clamp(16px, 2.5vw, 32px);
+    text-align: center;
+  }
+  .pyramid-layer .layer-label { font-size: clamp(13px, 1.5vw, 20px); font-weight: bold; margin-bottom: clamp(4px, 0.8vh, 8px); }
+  .pyramid-layer .layer-text { font-size: clamp(20px, 2.5vw, 36px); font-weight: bold; font-family: Consolas, monospace; }
+  .prep-row {
+    display: flex;
+    gap: clamp(16px, 2.5vw, 36px);
+    flex-wrap: wrap;
+    justify-content: center;
+    flex: 1;
+    align-items: center;
+  }
+  .prep-card {
+    flex: 1;
+    min-width: clamp(200px, 25vw, 300px);
+    max-width: clamp(280px, 30vw, 400px);
+    border-radius: clamp(12px, 1.2vw, 18px);
+    padding: clamp(18px, 3vh, 36px);
+    text-align: center;
+  }
+  .prep-card .icon { font-size: clamp(40px, 4.5vw, 64px); margin-bottom: clamp(8px, 1.5vh, 16px); }
+  .prep-card .prep-name { font-size: clamp(28px, 3.5vw, 48px); font-weight: bold; margin-bottom: clamp(6px, 1vh, 12px); font-family: Consolas, monospace; }
+  .prep-card .prep-desc { font-size: clamp(16px, 1.8vw, 24px); font-weight: bold; margin-bottom: clamp(10px, 1.5vh, 20px); }
+  .prep-card .examples { font-size: clamp(16px, 1.8vw, 24px); font-family: Consolas, monospace; line-height: 1.8; text-align: left; }
+
+  /* 翻页导航 */
+  .nav-bar {
+    position: fixed;
+    bottom: clamp(10px, 2vh, 24px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    border-radius: 30px;
+    padding: clamp(6px, 1vh, 10px) clamp(12px, 1.5vw, 20px);
+    display: flex;
+    align-items: center;
+    gap: clamp(10px, 1.5vw, 20px);
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .nav-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.3); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .page-info {
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    min-width: 60px;
+    text-align: center;
+    font-family: Consolas, monospace;
+  }
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: #3b82f6;
+    z-index: 100;
+    transition: width 0.3s ease;
+  }
+  .side-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 80px;
+    background: rgba(15, 23, 42, 0.3);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .side-arrow:hover { background: rgba(15, 23, 42, 0.6); }
+  .side-arrow.prev { left: 0; border-radius: 0 12px 12px 0; }
+  .side-arrow.next { right: 0; border-radius: 12px 0 0 12px; }
+  .side-arrow:disabled { opacity: 0; cursor: default; }
+</style>
+</head>
+<body>
+
+<!-- ===== 图1：开场灵魂三问 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#831843;">
+    <span class="slide-num">图1</span> 开场：上了初中，你是不是也这样？
+  </div>
+  <div class="slide-body" style="background:#fdf2f8;">
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div style="background:white;border-radius:14px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px;">
+        <div style="font-size:36px;">😰</div>
+        <div style="font-size:18px;line-height:1.6;">小学背背单词就能考高分，<br>上了初中怎么突然变难了？</div>
+      </div>
+      <div style="background:white;border-radius:14px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px;">
+        <div style="font-size:36px;">🤯</div>
+        <div style="font-size:18px;line-height:1.6;">单词都认识，拼在一起的句子<br>就看不懂、不会写？</div>
+      </div>
+      <div style="background:white;border-radius:14px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px;">
+        <div style="font-size:36px;">😤</div>
+        <div style="font-size:18px;line-height:1.6;">写出来的句子，老师总打叉，<br>说"不对，这是中式英语"？</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:25px;">
+      <div style="display:inline-block;background:#831843;color:white;border-radius:12px;padding:14px 28px;font-size:18px;font-weight:bold;">
+        💡 不是你笨，是方法错了！
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图2：本课大纲 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#1e3a8a;">
+    <span class="slide-num">图2</span> 本课核心内容
+  </div>
+  <div class="slide-body" style="background:#eff6ff;">
+    <div style="width:100%;display:flex;flex-direction:column;gap:12px;">
+      <div style="background:white;border-left:6px solid #3b82f6;border-radius:10px;padding:16px 20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+        <div style="font-size:16px;color:#1e40af;font-weight:bold;margin-bottom:4px;">① 中英思维大不同</div>
+        <div style="font-size:14px;color:#475569;">为什么你写的英语，老师总说是中式英语？</div>
+      </div>
+      <div style="background:white;border-left:6px solid #10b981;border-radius:10px;padding:16px 20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+        <div style="font-size:16px;color:#065f46;font-weight:bold;margin-bottom:4px;">② 句子金字塔</div>
+        <div style="font-size:14px;color:#475569;">写句子就像搭金字塔，先搭骨架再加装饰</div>
+      </div>
+      <div style="background:white;border-left:6px solid #f59e0b;border-radius:10px;padding:16px 20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+        <div style="font-size:16px;color:#92400e;font-weight:bold;margin-bottom:4px;">③ 单词会变身</div>
+        <div style="font-size:14px;color:#475569;">名词复数、动词三单，为什么要加s？</div>
+      </div>
+      <div style="background:white;border-left:6px solid #8b5cf6;border-radius:10px;padding:16px 20px;box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+        <div style="font-size:16px;color:#5b21b6;font-weight:bold;margin-bottom:4px;">④ 初中英语怎么学</div>
+        <div style="font-size:14px;color:#475569;">每天三个10分钟，高效学英语</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图3：差异1主图 - 英文必须有主角 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#0c4a6e;">
+    <span class="slide-num">图3</span> 差异1：英文句子必须有「主角」
+  </div>
+  <div class="slide-body" style="background:#f0f9ff;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#0c4a6e;">🎭 中文能省略主语，英文不行——没主语句子就散架了</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">下雨了。</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（用It当假主语）</div>
+          <div class="box-text">It is raining.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文（省略了"我"）</div>
+          <div class="box-text">太累了。</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（补上I am）</div>
+          <div class="box-text">I am so tired.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">桌子上有一本书。</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（用There is）</div>
+          <div class="box-text">There is a book on the desk.</div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#0c4a6e;">
+        💡 记住：英文句子 = 必须有主角（谁/什么）+ 动作/状态
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图4：差异1扩展 - 天气时间类 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#0369a1;">
+    <span class="slide-num">图4</span> 差异1扩展：天气时间也要补主语
+  </div>
+  <div class="slide-body" style="background:#f0f9ff;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#0c4a6e;">📝 中文不说"它"，英文必须说 It</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card">
+        <div class="cn" style="font-size:20px;">🇨🇳 几点了？</div>
+        <div class="en" style="font-size:26px;">What time is it?</div>
+      </div>
+      <div class="grid-card">
+        <div class="cn" style="font-size:20px;">🇨🇳 出太阳了。</div>
+        <div class="en" style="font-size:26px;">It is sunny.</div>
+      </div>
+      <div class="grid-card" style="grid-column:1 / -1;">
+        <div class="cn" style="font-size:20px;">🇨🇳 天冷了。</div>
+        <div class="en" style="font-size:26px;">It is cold.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图4b：差异1扩展 - 形式主语/There be ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#0369a1;">
+    <span class="slide-num">图4b</span> 差异1扩展：形式主语和There be
+  </div>
+  <div class="slide-body" style="background:#f0f9ff;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#0c4a6e;">📝 中文能省主语，英文用 It / There 补出来</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card">
+        <div class="cn" style="font-size:20px;">🇨🇳 很难学好英语。</div>
+        <div class="en" style="font-size:24px;">It is hard to learn English well.</div>
+      </div>
+      <div class="grid-card">
+        <div class="cn" style="font-size:20px;">🇨🇳 桌子上有两支笔。</div>
+        <div class="en" style="font-size:24px;">There are two pens on the desk.</div>
+      </div>
+      <div class="grid-card" style="grid-column:1 / -1;">
+        <div class="cn" style="font-size:20px;">🇨🇳 为什么迟到？</div>
+        <div class="en" style="font-size:26px;">Why are you late?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图5：差异2主图 - 形容词加be动词 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#7f1d1d;">
+    <span class="slide-num">图5</span> 差异2：形容词前面必须有「胶水」
+  </div>
+  <div class="slide-body" style="background:#fef2f2;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#7f1d1d;">🧴 中文形容词直接作谓语，英文必须加 be 动词（am/is/are）</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文（形容词直接用）</div>
+          <div class="box-text">他很高。</div>
+        </div>
+        <div class="arrow" style="color:#7f1d1d;">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（加is当胶水）</div>
+          <div class="box-text">He <span style="color:#166534;">is</span> very tall.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">我很高兴。</div>
+        </div>
+        <div class="arrow" style="color:#7f1d1d;">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（加am当胶水）</div>
+          <div class="box-text">I <span style="color:#166534;">am</span> very happy.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">他们很忙。</div>
+        </div>
+        <div class="arrow" style="color:#7f1d1d;">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（加are当胶水）</div>
+          <div class="box-text">They <span style="color:#166534;">are</span> very busy.</div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#7f1d1d;">
+        💡 记住：be动词（am/is/are）= 连接主语和形容词的胶水
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图6：差异2重点卡 - I very like 错误 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#9a3412;">
+    <span class="slide-num">图6</span> 最经典错误：I very like it.
+  </div>
+  <div class="slide-body" style="background:#fff7ed;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#9a3412;">⚠️ very 不能修饰动词！它只能修饰形容词</div>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;width:100%;">
+      <div style="flex:1;min-width:250px;background:#fee2e2;border:4px solid #dc2626;border-radius:14px;padding:20px;">
+        <div style="text-align:center;font-size:28px;margin-bottom:10px;">❌</div>
+        <div style="font-size:22px;font-weight:bold;color:#991b1b;text-align:center;font-family:Consolas,monospace;">I very like English.</div>
+        <div style="font-size:14px;color:#991b1b;text-align:center;margin-top:12px;line-height:1.5;">
+          错误原因：<br>very 直接修饰动词 like<br>→ 中文直译：我非常喜欢英语
+        </div>
+      </div>
+      <div style="flex:1;min-width:250px;background:#dcfce7;border:4px solid #16a34a;border-radius:14px;padding:20px;">
+        <div style="text-align:center;font-size:28px;margin-bottom:10px;">✅</div>
+        <div style="font-size:22px;font-weight:bold;color:#166534;text-align:center;font-family:Consolas,monospace;">I like English very much.</div>
+        <div style="font-size:14px;color:#166534;text-align:center;margin-top:12px;line-height:1.5;">
+          正确做法：<br>very much 放句末修饰全句<br>→ 英文习惯把修饰放后面
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#9a3412;">
+        💡 记住：very = 修饰形容词的（tall/happy/interesting），不能直接修饰动词
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图7：差异2扩展 - 肯定句 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#991b1b;">
+    <span class="slide-num">图7</span> 差异2扩展：肯定句中的be动词
+  </div>
+  <div class="slide-body" style="background:#fef2f2;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#7f1d1d;">📝 说"是/很"的时候，别忘加 is/am/are</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#ef4444;">
+        <div class="cn" style="font-size:20px;">🇨🇳 这本书很有趣。</div>
+        <div class="en" style="font-size:26px;">This book is interesting.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ef4444;">
+        <div class="cn" style="font-size:20px;">🇨🇳 那只猫很可爱。</div>
+        <div class="en" style="font-size:26px;">The cat is very cute.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ef4444;grid-column:1 / -1;">
+        <div class="cn" style="font-size:20px;">🇨🇳 这个问题很难。</div>
+        <div class="en" style="font-size:26px;">This question is very difficult.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图7b：差异2扩展 - 否定句疑问句 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#991b1b;">
+    <span class="slide-num">图7b</span> 差异2扩展：否定句和疑问句
+  </div>
+  <div class="slide-body" style="background:#fef2f2;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#7f1d1d;">📝 变否定、变疑问，还是离不开be动词</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#3b82f6;">
+        <div class="cn" style="font-size:20px;">🇨🇳 我不饿。（否定句）</div>
+        <div class="en" style="font-size:26px;">I am not hungry.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#3b82f6;">
+        <div class="cn" style="font-size:20px;">🇨🇳 他不是老师。（否定句）</div>
+        <div class="en" style="font-size:26px;">He is not a teacher.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#10b981;grid-column:1 / -1;">
+        <div class="cn" style="font-size:20px;">🇨🇳 你是学生吗？（疑问句）</div>
+        <div class="en" style="font-size:26px;">Are you a student?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图8：差异3主图 - 动词会变身 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#7c2d12;">
+    <span class="slide-num">图8</span> 差异3：动词会「改头换面」
+  </div>
+  <div class="slide-body" style="background:#fff7ed;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#7c2d12;">⏰ 中文靠加词表时间，英文靠动词变形表时间</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文（动词不变）</div>
+          <div class="box-text">我昨天去公园。</div>
+        </div>
+        <div class="arrow" style="color:#7c2d12;">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（go → went）</div>
+          <div class="box-text">I <span style="color:#166534;">went</span> to the park yesterday.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">他正在做作业。</div>
+        </div>
+        <div class="arrow" style="color:#7c2d12;">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（is doing 进行时）</div>
+          <div class="box-text">He <span style="color:#166534;">is doing</span> his homework.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">我明天要去北京。</div>
+        </div>
+        <div class="arrow" style="color:#7c2d12;">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（will go 将来时）</div>
+          <div class="box-text">I <span style="color:#166534;">will go</span> to Beijing tomorrow.</div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#7c2d12;">
+        💡 记住：时间变了，动词就要跟着变形
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图9：差异3扩展 - 三大基础时态 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#9a3412;">
+    <span class="slide-num">图9</span> 差异3扩展：三大基础时态
+  </div>
+  <div class="slide-body" style="background:#fff7ed;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#7c2d12;">📝 时间不同，动词样子就不同</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#10b981;">
+        <div class="cn" style="font-size:19px;">🇨🇳 我每天六点起床。（一般现在时）</div>
+        <div class="en" style="font-size:24px;">I get up at six every day.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#f59e0b;">
+        <div class="cn" style="font-size:19px;">🇨🇳 我昨天买了一支笔。（一般过去时）</div>
+        <div class="en" style="font-size:24px;">I bought a pen yesterday.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#3b82f6;grid-column:1 / -1;">
+        <div class="cn" style="font-size:19px;">🇨🇳 她正在看书。（现在进行时）</div>
+        <div class="en" style="font-size:24px;">She is reading a book.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图9b：差异3扩展 - 将来时/否定/被动 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#9a3412;">
+    <span class="slide-num">图9b</span> 差异3扩展：将来时、否定和被动
+  </div>
+  <div class="slide-body" style="background:#fff7ed;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#7c2d12;">📝 动词变形还有这些花样</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#8b5cf6;">
+        <div class="cn" style="font-size:19px;">🇨🇳 他明天会来。（一般将来时）</div>
+        <div class="en" style="font-size:24px;">He will come tomorrow.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ef4444;">
+        <div class="cn" style="font-size:19px;">🇨🇳 我昨天没看电视。（否定句）</div>
+        <div class="en" style="font-size:24px;">I didn't watch TV yesterday.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ec4899;grid-column:1 / -1;">
+        <div class="cn" style="font-size:19px;">🇨🇳 这个杯子被打破了。（被动语态）</div>
+        <div class="en" style="font-size:24px;">This cup was broken.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图10：差异4主图 - 句子要连接词 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#1e40af;">
+    <span class="slide-num">图10</span> 差异4：句子必须「粘」起来
+  </div>
+  <div class="slide-body" style="background:#eff6ff;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#1e40af;">🔗 中文靠逗号，英文必须加连词或从句</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文（逗号连接）</div>
+          <div class="box-text">天冷了，多穿点。</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（加so表因果）</div>
+          <div class="box-text">It is cold, <span style="color:#166534;">so</span> wear more clothes.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">我喜欢苹果，我不喜欢香蕉。</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（加but表转折）</div>
+          <div class="box-text">I like apples, <span style="color:#166534;">but</span> I don't like bananas.</div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="cn-box">
+          <div class="box-label">🇨🇳 中文</div>
+          <div class="box-text">我昨天没去上学，因为我生病了。</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="en-box">
+          <div class="box-label">🇬🇧 英文（加because表原因）</div>
+          <div class="box-text">I didn't go to school <span style="color:#166534;">because</span> I was ill.</div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#1e40af;">
+        💡 记住：两个完整句子不能只用逗号连着，必须加连词
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图11：差异4扩展 - 三大连词 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#1e3a8a;">
+    <span class="slide-num">图11</span> 差异4扩展：三大常用连词
+  </div>
+  <div class="slide-body" style="background:#eff6ff;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#1e40af;">📝 and / but / because 记住这三个就够用</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#10b981;">
+        <div class="cn" style="font-size:19px;">🇨🇳 我喜欢音乐，我也喜欢运动。（并列）</div>
+        <div class="en" style="font-size:24px;">I like music, and I like sports.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ef4444;">
+        <div class="cn" style="font-size:19px;">🇨🇳 他很累，但是他继续工作。（转折）</div>
+        <div class="en" style="font-size:24px;">He was tired, but he kept working.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#f59e0b;grid-column:1 / -1;">
+        <div class="cn" style="font-size:19px;">🇨🇳 因为下雨，我们待在家里。（因果）</div>
+        <div class="en" style="font-size:24px;">Because it rained, we stayed at home.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图11b：差异4扩展 - 定语从句 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#1e3a8a;">
+    <span class="slide-num">图11b</span> 差异4扩展：定语从句（修饰名词）
+  </div>
+  <div class="slide-body" style="background:#eff6ff;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#1e40af;">📝 中文用"的"，英文用 who / that 引导从句</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#8b5cf6;">
+        <div class="cn" style="font-size:19px;">🇨🇳 我认识那个穿红衣服的女孩。</div>
+        <div class="en" style="font-size:22px;">I know the girl who is wearing red.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ec4899;">
+        <div class="cn" style="font-size:19px;">🇨🇳 那个正在跑步的男孩是我同学。</div>
+        <div class="en" style="font-size:22px;">The boy who is running is my classmate.</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#06b6d4;grid-column:1 / -1;">
+        <div class="cn" style="font-size:19px;">🇨🇳 这是我昨天买的书。</div>
+        <div class="en" style="font-size:22px;">This is the book that I bought yesterday.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图12：差异5主图 - 介词in/on/at ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#14532d;">
+    <span class="slide-num">图12</span> 差异5：中文一个"在"，英文三个介词
+  </div>
+  <div class="slide-body" style="background:#f0fdf4;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#14532d;">📍 in / on / at 各有各的"地盘范围"</div>
+    </div>
+    <div class="prep-row">
+      <div class="prep-card" style="background:#fee2e2;border:3px solid #ef4444;">
+        <div class="icon">🕐</div>
+        <div class="prep-name" style="color:#991b1b;">at</div>
+        <div class="prep-desc" style="color:#7f1d1d;">一个点</div>
+        <div class="examples" style="color:#1f2937;">
+          • at 8 o'clock<br>
+          • at the gate<br>
+          • at noon
+        </div>
+      </div>
+      <div class="prep-card" style="background:#dbeafe;border:3px solid #3b82f6;">
+        <div class="icon">📅</div>
+        <div class="prep-name" style="color:#1e40af;">on</div>
+        <div class="prep-desc" style="color:#1e3a8a;">一条线/表面</div>
+        <div class="examples" style="color:#1f2937;">
+          • on Monday<br>
+          • on the wall<br>
+          • on the desk
+        </div>
+      </div>
+      <div class="prep-card" style="background:#dcfce7;border:3px solid #22c55e;">
+        <div class="icon">📦</div>
+        <div class="prep-name" style="color:#166534;">in</div>
+        <div class="prep-desc" style="color:#14532d;">一个大空间</div>
+        <div class="examples" style="color:#1f2937;">
+          • in the box<br>
+          • in the room<br>
+          • in May
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#14532d;">
+        💡 范围从大到小：in（大空间）> on（表面）> at（一个点）
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图13：差异5扩展 - at 一个点 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#166534;">
+    <span class="slide-num">图13</span> 差异5扩展：at —— 一个点
+  </div>
+  <div class="slide-body" style="background:#f0fdf4;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#14532d;">📍 at 用在具体的"时间点"和"地点点"</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#ef4444;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在8点钟（时间：点）</div>
+        <div class="en" style="font-size:26px;">at 8 o'clock</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ef4444;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在学校门口（地点：点）</div>
+        <div class="en" style="font-size:26px;">at the school gate</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#ef4444;grid-column:1 / -1;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在车站（地点：点）</div>
+        <div class="en" style="font-size:26px;">at the station</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图13b：差异5扩展 - on 一条线 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#166534;">
+    <span class="slide-num">图13b</span> 差异5扩展：on —— 一条线/表面
+  </div>
+  <div class="slide-body" style="background:#f0fdf4;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#14532d;">📍 on 用在"某一天"和"物体表面上"</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#3b82f6;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在星期一（时间：天）</div>
+        <div class="en" style="font-size:26px;">on Monday</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#3b82f6;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在星期天（时间：天）</div>
+        <div class="en" style="font-size:26px;">on Sunday</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#3b82f6;grid-column:1 / -1;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在桌子上（地点：表面）</div>
+        <div class="en" style="font-size:26px;">on the desk</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图13c：差异5扩展 - in 大空间 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#166534;">
+    <span class="slide-num">图13c</span> 差异5扩展：in —— 大空间
+  </div>
+  <div class="slide-body" style="background:#f0fdf4;justify-content:center;">
+    <div style="text-align:center;margin-bottom:35px;">
+      <div style="font-size:28px;font-weight:bold;color:#14532d;">📍 in 用在"大段时间"和"物体内部"</div>
+    </div>
+    <div class="grid-cards" style="gap:28px;">
+      <div class="grid-card" style="border-left-color:#22c55e;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在盒子里（地点：内部）</div>
+        <div class="en" style="font-size:26px;">in the box</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#22c55e;">
+        <div class="cn" style="font-size:20px;">🇨🇳 在下午（时间：段）</div>
+        <div class="en" style="font-size:26px;">in the afternoon</div>
+      </div>
+      <div class="grid-card" style="border-left-color:#22c55e;grid-column:1 / -1;">
+        <div class="cn" style="font-size:20px;">🇨🇳 鸟在树上（地点：内部）</div>
+        <div class="en" style="font-size:26px;">The bird is in the tree.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图14：五大差异总览 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#1e293b;">
+    <span class="slide-num">图14</span> 五大差异总览
+  </div>
+  <div class="slide-body" style="background:#f8fafc;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#1e293b;">📋 一张图记住中英思维五大不同</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
+      <div style="background:white;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px;">
+        <div style="font-size:24px;">🎭</div>
+        <div>
+          <div style="font-weight:bold;color:#0c4a6e;">差异1：必须有主语</div>
+          <div style="font-size:14px;color:#64748b;">中文能省略，英文必须补（It/There be）</div>
+        </div>
+      </div>
+      <div style="background:white;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px;">
+        <div style="font-size:24px;">🧴</div>
+        <div>
+          <div style="font-weight:bold;color:#7f1d1d;">差异2：形容词加be动词</div>
+          <div style="font-size:14px;color:#64748b;">中文直接用，英文必须加am/is/are</div>
+        </div>
+      </div>
+      <div style="background:white;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px;">
+        <div style="font-size:24px;">⏰</div>
+        <div>
+          <div style="font-weight:bold;color:#7c2d12;">差异3：动词会变身</div>
+          <div style="font-size:14px;color:#64748b;">中文靠加词表时间，英文靠动词变形</div>
+        </div>
+      </div>
+      <div style="background:white;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px;">
+        <div style="font-size:24px;">🔗</div>
+        <div>
+          <div style="font-weight:bold;color:#1e40af;">差异4：句子要连接词</div>
+          <div style="font-size:14px;color:#64748b;">中文靠逗号，英文必须加连词或从句</div>
+        </div>
+      </div>
+      <div style="background:white;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px;">
+        <div style="font-size:24px;">📍</div>
+        <div>
+          <div style="font-weight:bold;color:#14532d;">差异5：介词分得细</div>
+          <div style="font-size:14px;color:#64748b;">中文一个"在"，英文in/on/at各不同</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图15：金字塔主图 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#78350f;">
+    <span class="slide-num">图15</span> 写句子 = 搭金字塔
+  </div>
+  <div class="slide-body" style="background:#fffbeb;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#78350f;">🔺 最底层是基石（核心），往上一层一层加修饰</div>
+    </div>
+    <div class="pyramid-wrap" style="width:100%;">
+      <div class="pyramid-layer" style="width:60%;background:#fef3c7;border:3px solid #f59e0b;">
+        <div class="layer-label" style="color:#92400e;">🟡 顶层：动作修饰（在哪里/什么时候）</div>
+        <div class="layer-text" style="color:#1f2937;">in the park.</div>
+      </div>
+      <div class="pyramid-layer" style="width:75%;background:#dbeafe;border:3px solid #3b82f6;">
+        <div class="layer-label" style="color:#1e40af;">🔵 中层：名词修饰（什么样的）</div>
+        <div class="layer-text" style="color:#1f2937;">The <span style="color:#3b82f6;">white</span> dog</div>
+      </div>
+      <div class="pyramid-layer" style="width:90%;background:#d1fae5;border:3px solid #10b981;">
+        <div class="layer-label" style="color:#065f46;">🔴 底层：基石骨架（不能动！）</div>
+        <div class="layer-text" style="color:#1f2937;">The dog runs.</div>
+      </div>
+    </div>
+    <div style="width:100%;margin:20px auto 0;">
+      <div style="background:#78350f;border-radius:12px;padding:16px 20px;text-align:center;">
+        <div style="font-size:14px;color:#fde68a;margin-bottom:6px;">✅ 搭好啦！完整句子：</div>
+        <div style="font-size:22px;font-weight:bold;color:white;font-family:Consolas,monospace;">The white dog runs in the park.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图16：金字塔例子2 - 主系表 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#92400e;">
+    <span class="slide-num">图16</span> 金字塔例子2：主系表句型
+  </div>
+  <div class="slide-body" style="background:#fffbeb;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#78350f;">🔺 同一个金字塔逻辑，换个句型照样用</div>
+    </div>
+    <div class="pyramid-wrap" style="width:100%;">
+      <div class="pyramid-layer" style="width:60%;background:#fef3c7;border:3px solid #f59e0b;">
+        <div class="layer-label" style="color:#92400e;">🟡 顶层：地点修饰</div>
+        <div class="layer-text" style="color:#1f2937;">at school.</div>
+      </div>
+      <div class="pyramid-layer" style="width:75%;background:#dbeafe;border:3px solid #3b82f6;">
+        <div class="layer-label" style="color:#1e40af;">🔵 中层：名词修饰</div>
+        <div class="layer-text" style="color:#1f2937;">I am a <span style="color:#3b82f6;">happy</span> student</div>
+      </div>
+      <div class="pyramid-layer" style="width:90%;background:#d1fae5;border:3px solid #10b981;">
+        <div class="layer-label" style="color:#065f46;">🔴 底层：核心骨架</div>
+        <div class="layer-text" style="color:#1f2937;">I am a student.</div>
+      </div>
+    </div>
+    <div style="width:100%;margin:20px auto 0;">
+      <div style="background:#78350f;border-radius:12px;padding:16px 20px;text-align:center;">
+        <div style="font-size:14px;color:#fde68a;margin-bottom:6px;">✅ 完整句子：</div>
+        <div style="font-size:22px;font-weight:bold;color:white;font-family:Consolas,monospace;">I am a happy student at school.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图17：金字塔例子3 - 主谓宾 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#b45309;">
+    <span class="slide-num">图17</span> 金字塔例子3：主谓宾句型
+  </div>
+  <div class="slide-body" style="background:#fffbeb;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#78350f;">🔺 三种基本句型，都能拆成金字塔</div>
+    </div>
+    <div class="pyramid-wrap" style="width:100%;">
+      <div class="pyramid-layer" style="width:60%;background:#fef3c7;border:3px solid #f59e0b;">
+        <div class="layer-label" style="color:#92400e;">🟡 顶层：程度修饰</div>
+        <div class="layer-text" style="color:#1f2937;">very much.</div>
+      </div>
+      <div class="pyramid-layer" style="width:75%;background:#dbeafe;border:3px solid #3b82f6;">
+        <div class="layer-label" style="color:#1e40af;">🔵 中层：名词修饰</div>
+        <div class="layer-text" style="color:#1f2937;">I like <span style="color:#3b82f6;">red</span> apples</div>
+      </div>
+      <div class="pyramid-layer" style="width:90%;background:#d1fae5;border:3px solid #10b981;">
+        <div class="layer-label" style="color:#065f46;">🔴 底层：核心骨架</div>
+        <div class="layer-text" style="color:#1f2937;">I like apples.</div>
+      </div>
+    </div>
+    <div style="width:100%;margin:20px auto 0;">
+      <div style="background:#78350f;border-radius:12px;padding:16px 20px;text-align:center;">
+        <div style="font-size:14px;color:#fde68a;margin-bottom:6px;">✅ 完整句子：</div>
+        <div style="font-size:22px;font-weight:bold;color:white;font-family:Consolas,monospace;">I like red apples very much.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图18：红线警示 - 一山不容二虎 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#991b1b;">
+    <span class="slide-num">图18</span> 红线警示：一山不容二虎
+  </div>
+  <div class="slide-body" style="background:#fef2f2;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#991b1b;">⚠️ 一个句子只能有一个核心动作！</div>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;width:100%;">
+      <div style="flex:1;min-width:250px;background:#fee2e2;border:4px solid #dc2626;border-radius:14px;padding:20px;">
+        <div style="text-align:center;font-size:28px;margin-bottom:10px;">❌</div>
+        <div style="font-size:20px;font-weight:bold;color:#991b1b;text-align:center;font-family:Consolas,monospace;line-height:1.6;">
+          I go to school<br>learn English.
+        </div>
+        <div style="font-size:14px;color:#991b1b;text-align:center;margin-top:12px;line-height:1.5;">
+          两个核心动作平起平坐<br>→ 中文流水句思维
+        </div>
+      </div>
+      <div style="flex:1;min-width:250px;background:#dcfce7;border:4px solid #16a34a;border-radius:14px;padding:20px;">
+        <div style="text-align:center;font-size:28px;margin-bottom:10px;">✅</div>
+        <div style="font-size:20px;font-weight:bold;color:#166534;text-align:center;font-family:Consolas,monospace;line-height:1.6;">
+          I go to school<br><span style="color:#166534;">to</span> learn English.
+        </div>
+        <div style="font-size:14px;color:#166534;text-align:center;margin-top:12px;line-height:1.5;">
+          第二个动作降级（to do）<br>→ 一个核心，一个辅助
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#991b1b;">
+        💡 记住：核心动作只有一个，第二个动作必须降级变形
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图19：课堂练习 - 给句子加装饰 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#065f46;">
+    <span class="slide-num">图19</span> 课堂练习：给句子加装饰
+  </div>
+  <div class="slide-body" style="background:#f0fdf4;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#065f46;">✏️ 动动手：用金字塔方法扩展句子</div>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:16px;">
+      <div style="background:white;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:14px;color:#64748b;margin-bottom:8px;">练习1：基础句</div>
+        <div style="font-size:20px;font-weight:bold;color:#1f2937;font-family:Consolas,monospace;margin-bottom:12px;">The girl reads.</div>
+        <div style="font-size:15px;color:#374151;line-height:1.8;">
+          👉 加什么装饰？<br>
+          • 什么样的女孩？（名词修饰）<br>
+          • 在哪里读书？（动作修饰）
+        </div>
+      </div>
+      <div style="background:white;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:14px;color:#64748b;margin-bottom:8px;">练习2：基础句</div>
+        <div style="font-size:20px;font-weight:bold;color:#1f2937;font-family:Consolas,monospace;margin-bottom:12px;">I like apples.</div>
+        <div style="font-size:15px;color:#374151;line-height:1.8;">
+          👉 加什么装饰？<br>
+          • 什么样的苹果？（名词修饰）<br>
+          • 有多喜欢？（动作修饰）
+        </div>
+      </div>
+      <div style="background:#d1fae5;border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-size:15px;color:#065f46;font-weight:bold;">💡 参考示例：The girl reads books in the library.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图20：名词变身 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#9d174d;">
+    <span class="slide-num">图20</span> 单词变身1：名词变复数
+  </div>
+  <div class="slide-body" style="background:#fdf2f8;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#9d174d;">🍎 数量大于1，名词后面加 s</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;text-align:center;background:white;border-radius:10px;padding:12px;">
+          <div style="font-size:28px;">📖</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">one book</div>
+        </div>
+        <div style="font-size:24px;color:#9d174d;font-weight:bold;">→</div>
+        <div style="flex:1;min-width:150px;text-align:center;background:#fce7f3;border-radius:10px;padding:12px;border:2px solid #ec4899;">
+          <div style="font-size:28px;">📖📖📖</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">three book<span style="color:#dc2626;">s</span></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;text-align:center;background:white;border-radius:10px;padding:12px;">
+          <div style="font-size:28px;">🐱</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">a cat</div>
+        </div>
+        <div style="font-size:24px;color:#9d174d;font-weight:bold;">→</div>
+        <div style="flex:1;min-width:150px;text-align:center;background:#fce7f3;border-radius:10px;padding:12px;border:2px solid #ec4899;">
+          <div style="font-size:28px;">🐱🐱🐱🐱</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">five cat<span style="color:#dc2626;">s</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#9d174d;">
+        💡 记住：中文靠"个/们"表数量，英语靠名词加 s 表复数
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图21：动词三单变身 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#0e7490;">
+    <span class="slide-num">图21</span> 单词变身2：动词变三单
+  </div>
+  <div class="slide-body" style="background:#ecfeff;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#0e7490;">🏃 主角是他/她/它，动词后面加 s</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;text-align:center;background:white;border-radius:10px;padding:12px;">
+          <div style="font-size:28px;">🧑</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">I like</div>
+        </div>
+        <div style="font-size:24px;color:#0e7490;font-weight:bold;">→</div>
+        <div style="flex:1;min-width:150px;text-align:center;background:#cffafe;border-radius:10px;padding:12px;border:2px solid #06b6d4;">
+          <div style="font-size:28px;">👧</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">He like<span style="color:#dc2626;">s</span></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;text-align:center;background:white;border-radius:10px;padding:12px;">
+          <div style="font-size:28px;">👦</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">We play</div>
+        </div>
+        <div style="font-size:24px;color:#0e7490;font-weight:bold;">→</div>
+        <div style="flex:1;min-width:150px;text-align:center;background:#cffafe;border-radius:10px;padding:12px;border:2px solid #06b6d4;">
+          <div style="font-size:28px;">🧑‍🏫</div>
+          <div style="font-size:18px;font-weight:bold;font-family:Consolas,monospace;">She play<span style="color:#dc2626;">s</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#0e7490;">
+        💡 记住：中文动词永远不变，英语主角变了动词就要跟着变
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图22：课堂练习 - 填空 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#4338ca;">
+    <span class="slide-num">图22</span> 课堂练习：火眼金睛找错误
+  </div>
+  <div class="slide-body" style="background:#eef2ff;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#4338ca;">✏️ 动动笔：看看下面句子哪里错了？</div>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:12px;">
+      <div style="background:white;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:18px;font-family:Consolas,monospace;color:#1f2937;margin-bottom:6px;">1. I have three pen.</div>
+        <div style="font-size:14px;color:#64748b;">提示：名词数量大于1要怎么变？</div>
+      </div>
+      <div style="background:white;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:18px;font-family:Consolas,monospace;color:#1f2937;margin-bottom:6px;">2. He go to school by bike.</div>
+        <div style="font-size:14px;color:#64748b;">提示：主角是He，动词要怎么变？</div>
+      </div>
+      <div style="background:white;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:18px;font-family:Consolas,monospace;color:#1f2937;margin-bottom:6px;">3. I very like English.</div>
+        <div style="font-size:14px;color:#64748b;">提示：very 能直接修饰动词吗？</div>
+      </div>
+      <div style="background:white;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="font-size:18px;font-family:Consolas,monospace;color:#1f2937;margin-bottom:6px;">4. I open the door go out.</div>
+        <div style="font-size:14px;color:#64748b;">提示：一个句子能有两个核心动作吗？</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图23：单词怎么背 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#5b21b6;">
+    <span class="slide-num">图23</span> 单词怎么背才高效？
+  </div>
+  <div class="slide-body" style="background:#f5f3ff;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#5b21b6;">📚 三步背词法：先听音 → 再记意 → 后拼写</div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:100%;margin:0 auto;">
+      <div style="flex:1;min-width:180px;background:white;border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:32px;margin-bottom:8px;">👂</div>
+        <div style="font-size:18px;font-weight:bold;color:#5b21b6;margin-bottom:6px;">第一步：听发音</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">先听录音，跟着读准发音</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:white;border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:32px;margin-bottom:8px;">💡</div>
+        <div style="font-size:18px;font-weight:bold;color:#5b21b6;margin-bottom:6px;">第二步：记意思</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">声音和意思直接绑定，不想中文</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:white;border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:32px;margin-bottom:8px;">✍️</div>
+        <div style="font-size:18px;font-weight:bold;color:#5b21b6;margin-bottom:6px;">第三步：记拼写</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">根据发音规律记拼写</div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#5b21b6;">
+        💡 记住：英语是"说"出来的，不是"拼"出来的
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图24：每日三个10分钟 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#047857;">
+    <span class="slide-num">图24</span> 每天三个10分钟
+  </div>
+  <div class="slide-body" style="background:#ecfdf5;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#047857;">⏰ 不用花大量时间，每天坚持三件事</div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:100%;margin:0 auto;">
+      <div style="flex:1;min-width:180px;background:white;border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-top:4px solid #3b82f6;">
+        <div style="font-size:32px;margin-bottom:8px;">🎧</div>
+        <div style="font-size:18px;font-weight:bold;color:#1e40af;margin-bottom:6px;">听10分钟</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">课本录音、简单动画，磨耳朵</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:white;border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-top:4px solid #10b981;">
+        <div style="font-size:32px;margin-bottom:8px;">📖</div>
+        <div style="font-size:18px;font-weight:bold;color:#065f46;margin-bottom:6px;">读10分钟</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">大声读课文，不用背，读熟就行</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:white;border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-top:4px solid #f59e0b;">
+        <div style="font-size:32px;margin-bottom:8px;">✍️</div>
+        <div style="font-size:18px;font-weight:bold;color:#92400e;margin-bottom:6px;">造句10分钟</div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;">用当天学的单词造2-3个句子</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图25：语法怎么学 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#be185d;">
+    <span class="slide-num">图25</span> 语法怎么学？
+  </div>
+  <div class="slide-body" style="background:#fdf2f8;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:bold;color:#be185d;">📐 先会用，再记规则——不要死背公式</div>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;width:100%;">
+      <div style="flex:1;min-width:250px;background:#fee2e2;border:3px solid #ef4444;border-radius:14px;padding:18px;">
+        <div style="font-size:18px;font-weight:bold;color:#991b1b;margin-bottom:10px;text-align:center;">❌ 错误学法</div>
+        <div style="font-size:15px;color:#1f2937;line-height:1.8;">
+          • 死背"第三人称单数加s"<br>
+          • 背得很熟，一用就错<br>
+          • 刷大量语法单选题
+        </div>
+      </div>
+      <div style="flex:1;min-width:250px;background:#dcfce7;border:3px solid #22c55e;border-radius:14px;padding:18px;">
+        <div style="font-size:18px;font-weight:bold;color:#166534;margin-bottom:10px;text-align:center;">✅ 正确学法</div>
+        <div style="font-size:15px;color:#1f2937;line-height:1.8;">
+          • 先大量听、读正确句子<br>
+          • 读熟了形成语感<br>
+          • 做错了再回头看规则
+        </div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-inner" style="background:#be185d;">
+        💡 记住：语法是说话的习惯，不是数学公式
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图26：课后行动清单 ===== -->
+<div class="slide">
+  <div class="slide-header" style="background:#1e293b;">
+    <span class="slide-num">图26</span> 课后行动清单
+  </div>
+  <div class="slide-body" style="background:#f8fafc;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:24px;font-weight:bold;color:#1e293b;">🎯 今天就能做的3件事</div>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:12px;">
+      <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;gap:14px;">
+        <div style="width:28px;height:28px;border:2px solid #3b82f6;border-radius:6px;"></div>
+        <div style="font-size:16px;color:#1f2937;">把课本第一个单词，按「先听音→再记意→后拼写」重新背一遍</div>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;gap:14px;">
+        <div style="width:28px;height:28px;border:2px solid #10b981;border-radius:6px;"></div>
+        <div style="font-size:16px;color:#1f2937;">找出你最近写的英语句子，看看有没有"一山二虎"的连动错误</div>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;align-items:center;gap:14px;">
+        <div style="width:28px;height:28px;border:2px solid #f59e0b;border-radius:6px;"></div>
+        <div style="font-size:16px;color:#1f2937;">从今天开始，每天10分钟听读英语，坚持一周</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:25px;">
+      <div style="display:inline-block;background:#1e293b;color:white;border-radius:12px;padding:14px 28px;font-size:18px;font-weight:bold;">
+        🚀 初中英语不是更难了，是需要换方法了
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 顶部进度条 -->
+<div class="progress-bar" id="progressBar" style="width:0%"></div>
+
+<!-- 右上角小页码 -->
+<div id="pageInfoTop" style="position:fixed;bottom:16px;right:20px;background:rgba(15,23,42,0.4);color:rgba(255,255,255,0.7);padding:3px 10px;border-radius:10px;font-size:12px;font-family:Consolas,monospace;z-index:100;">1 / 32</div>
+
+<!-- 左右侧翻页箭头 -->
+<button class="side-arrow prev" id="prevArrow" onclick="prevSlide()">‹</button>
+<button class="side-arrow next" id="nextArrow" onclick="nextSlide()">›</button>
+
+<script>
+  (function() {
+    var slides = document.querySelectorAll('.slide');
+    var current = 0;
+    var total = slides.length;
+
+    function show(index) {
+      if (index < 0 || index >= total) return;
+      slides[current].classList.remove('active');
+      current = index;
+      slides[current].classList.add('active');
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('pageInfoTop').textContent = (current + 1) + ' / ' + total;
+      document.getElementById('progressBar').style.width = ((current + 1) / total * 100) + '%';
+      document.getElementById('prevArrow').disabled = (current === 0);
+      document.getElementById('nextArrow').disabled = (current === total - 1);
+    }
+
+    window.prevSlide = function() { show(current - 1); };
+    window.nextSlide = function() { show(current + 1); };
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+        e.preventDefault();
+        window.prevSlide();
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        window.nextSlide();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        show(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        show(total - 1);
+      }
+    });
+
+    // 触摸滑动支持
+    var touchStartX = 0;
+    document.addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+    document.addEventListener('touchend', function(e) {
+      var diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        if (diff < 0) window.nextSlide();
+        else window.prevSlide();
+      }
+    }, {passive: true});
+
+    // 初始化
+    show(0);
+  })();
+</script>
+
+</body>
+</html>
